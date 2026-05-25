@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>중학생 용돈·학업 성취·학습동기 설문</title>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Pretendard:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #1a2744;
+    --teal: #2a7f6f;
+    --gold: #c8922a;
+    --cream: #faf8f3;
+    --light: #f0ede4;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --border: #d4cfc4;
+    --white: #ffffff;
+    --progress-bg: #e5e0d5;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Pretendard', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* Progress Bar */
+  .progress-bar-wrap {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--progress-bg);
+    z-index: 100;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--teal), var(--gold));
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  /* Header */
+  .site-header {
+    background: var(--navy);
+    color: var(--white);
+    padding: 28px 0 24px;
+    text-align: center;
+    border-bottom: 3px solid var(--gold);
+  }
+  .site-header .label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .site-header h1 {
+    font-family: 'Nanum Myeongjo', serif;
+    font-size: clamp(18px, 3vw, 26px);
+    font-weight: 800;
+    line-height: 1.4;
+  }
+  .site-header .sub {
+    margin-top: 8px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+  }
+
+  /* Main */
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  /* Section */
+  .section {
+    display: none;
+    animation: fadeUp 0.35s ease;
+  }
+  .section.active { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .section-badge {
+    background: var(--navy);
+    color: var(--gold);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    padding: 5px 12px;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+  .section-title {
+    font-family: 'Nanum Myeongjo', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--navy);
+  }
+  .section-desc {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* Question Card */
+  .q-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 22px 24px;
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+  }
+  .q-card:focus-within { border-color: var(--teal); }
+
+  .q-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .q-num {
+    display: inline-block;
+    background: var(--teal);
+    color: var(--white);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 2px;
+    margin-right: 8px;
+    letter-spacing: 0.5px;
+    vertical-align: middle;
+  }
+
+  /* Radio / Checkbox options */
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .options.inline { flex-direction: row; flex-wrap: wrap; gap: 8px; }
+
+  .opt-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 4px;
+    font-size: 14px;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .opt-label:hover { border-color: var(--teal); background: #f0faf8; }
+  .opt-label input { display: none; }
+  .opt-label.selected {
+    border-color: var(--teal);
+    background: #e8f7f4;
+    color: var(--teal);
+    font-weight: 500;
+  }
+  .opt-label .check-box {
+    width: 18px; height: 18px;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .opt-label.selected .check-box {
+    border-color: var(--teal);
+    background: var(--teal);
+  }
+  .opt-label.selected .check-box::after {
+    content: '';
+    width: 6px; height: 6px;
+    background: white;
+    border-radius: 50%;
+  }
+
+  /* Likert Scale */
+  .likert-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .likert-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    min-width: 400px;
+  }
+  .likert-table thead th {
+    text-align: center;
+    padding: 6px 4px;
+    color: var(--muted);
+    font-weight: 500;
+    font-size: 11px;
+    border-bottom: 1px solid var(--border);
+  }
+  .likert-table thead th:first-child { text-align: left; min-width: 200px; }
+  .likert-table tbody tr { border-bottom: 1px solid var(--light); }
+  .likert-table tbody tr:last-child { border-bottom: none; }
+  .likert-table tbody td {
+    padding: 10px 4px;
+    text-align: center;
+    vertical-align: middle;
+  }
+  .likert-table tbody td:first-child {
+    text-align: left;
+    padding-left: 0;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--text);
+    padding-right: 12px;
+  }
+  .likert-radio {
+    width: 22px; height: 22px;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    cursor: pointer;
+    display: inline-block;
+    transition: all 0.15s;
+    position: relative;
+    margin: 0 auto;
+  }
+  .likert-radio:hover { border-color: var(--teal); }
+  .likert-radio.checked {
+    border-color: var(--teal);
+    background: var(--teal);
+  }
+  .likert-radio.checked::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px; height: 8px;
+    background: white;
+    border-radius: 50%;
+  }
+  .likert-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 6px;
+    padding: 0 2px;
+  }
+
+  /* Navigation */
+  .nav-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 32px;
+    gap: 12px;
+  }
+  .btn {
+    padding: 12px 28px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    font-family: 'Pretendard', sans-serif;
+  }
+  .btn-prev {
+    background: var(--white);
+    color: var(--navy);
+    border: 1.5px solid var(--border);
+  }
+  .btn-prev:hover { border-color: var(--navy); }
+  .btn-next {
+    background: var(--navy);
+    color: var(--white);
+    margin-left: auto;
+  }
+  .btn-next:hover { background: #243660; }
+  .btn-submit {
+    background: var(--teal);
+    color: var(--white);
+    margin-left: auto;
+    padding: 14px 36px;
+    font-size: 15px;
+  }
+  .btn-submit:hover { background: #236358; }
+
+  .step-indicator {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* Thank you screen */
+  #thankyou {
+    display: none;
+    text-align: center;
+    padding: 60px 20px;
+    animation: fadeUp 0.4s ease;
+  }
+  .ty-icon {
+    font-size: 56px;
+    margin-bottom: 20px;
+  }
+  .ty-title {
+    font-family: 'Nanum Myeongjo', serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--navy);
+    margin-bottom: 12px;
+  }
+  .ty-sub {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* Error highlight */
+  .q-card.error { border-color: #e05c5c; }
+  .error-msg {
+    font-size: 12px;
+    color: #e05c5c;
+    margin-top: 8px;
+  }
+
+  /* Intro screen */
+  #intro {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 36px 32px;
+    margin-bottom: 32px;
+  }
+  #intro h2 {
+    font-family: 'Nanum Myeongjo', serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--navy);
+    margin-bottom: 14px;
+  }
+  #intro p {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.8;
+    margin-bottom: 10px;
+  }
+  .info-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 18px;
+  }
+  .chip {
+    background: var(--light);
+    color: var(--navy);
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar-wrap">
+  <div class="progress-bar-fill" id="progressFill"></div>
+</div>
+
+<header class="site-header">
+  <h1>중학생의 학년별 용돈 규모가<br>학업 성취 및 학습동기에 미치는 영향</h1>
+</header>
+
+<div class="container">
+
+  <!-- Intro -->
+  <div id="intro">
+    <h2>설문에 참여해주셔서 감사합니다.</h2>
+    <p>본 설문은 중학교 시절의 용돈 규모와 학업 성취 및 학습동기의 관계를 탐색하는 예비 연구입니다.</p>
+    <p>모든 응답은 익명으로 처리되며, 연구 목적 외에는 사용되지 않습니다. 솔직하게 응답해주시면 큰 도움이 됩니다.</p>
+    <div class="info-chips">
+      <span class="chip">📋 총 15문항</span>
+      <span class="chip">⏱ 약 3~5분 소요</span>
+      <span class="chip">🔒 익명 보장</span>
+      <span class="chip">🎓 대상: 중3, 고1</span>
+    </div>
+  </div>
+
+  <!-- Section A: 기본 정보 -->
+  <div class="section active" id="sec-A">
+    <div class="section-header">
+      <span class="section-badge">PART A</span>
+      <div>
+        <div class="section-title">기본 정보</div>
+        <div class="section-desc">응답자의 기본 정보를 입력해주세요.</div>
+      </div>
+    </div>
+
+    <div class="q-card" id="qA1">
+      <div class="q-label"><span class="q-num">A1</span>현재 학년은 무엇인가요?</div>
+      <div class="options inline">
+        <label class="opt-label"><input type="radio" name="A1" value="중3"><span class="check-box"></span>중3</label>
+        <label class="opt-label"><input type="radio" name="A1" value="고1"><span class="check-box"></span>고1</label>
+      </div>
+    </div>
+
+    <div class="q-card" id="qA2">
+      <div class="q-label"><span class="q-num">A2</span>성별은 무엇인가요?</div>
+      <div class="options inline">
+        <label class="opt-label"><input type="radio" name="A2" value="남"><span class="check-box"></span>남</label>
+        <label class="opt-label"><input type="radio" name="A2" value="여"><span class="check-box"></span>여</label>
+      </div>
+    </div>
+
+    <div class="q-card" id="qA3">
+      <div class="q-label"><span class="q-num">A3</span>현재(또는 중학교 때) 사교육을 받고 있나요?</div>
+      <div class="options inline">
+        <label class="opt-label"><input type="radio" name="A3" value="예"><span class="check-box"></span>예</label>
+        <label class="opt-label"><input type="radio" name="A3" value="아니오"><span class="check-box"></span>아니오</label>
+      </div>
+    </div>
+
+    <div class="nav-wrap">
+      <span class="step-indicator">1 / 4</span>
+      <button class="btn btn-next" onclick="goNext('A')">다음 →</button>
+    </div>
+  </div>
+
+  <!-- Section B: 용돈 -->
+  <div class="section" id="sec-B">
+    <div class="section-header">
+      <span class="section-badge">PART B</span>
+      <div>
+        <div class="section-title">학년별 용돈 규모</div>
+        <div class="section-desc">중학교 시절 학년별 월평균 용돈을 떠올려 응답해주세요.</div>
+      </div>
+    </div>
+
+    <div class="q-card" id="qB1">
+      <div class="q-label"><span class="q-num">B1</span>중1 때 월평균 용돈은 얼마였나요?</div>
+      <div class="options">
+        <label class="opt-label"><input type="radio" name="B1" value="1"><span class="check-box"></span>1만원 미만</label>
+        <label class="opt-label"><input type="radio" name="B1" value="2"><span class="check-box"></span>1만원 이상 ~ 3만원 미만</label>
+        <label class="opt-label"><input type="radio" name="B1" value="3"><span class="check-box"></span>3만원 이상 ~ 5만원 미만</label>
+        <label class="opt-label"><input type="radio" name="B1" value="4"><span class="check-box"></span>5만원 이상 ~ 10만원 미만</label>
+        <label class="opt-label"><input type="radio" name="B1" value="5"><span class="check-box"></span>10만원 이상</label>
+      </div>
+    </div>
+
+    <div class="q-card" id="qB2">
+      <div class="q-label"><span class="q-num">B2</span>중2 때 월평균 용돈은 얼마였나요?</div>
+      <div class="options">
+        <label class="opt-label"><input type="radio" name="B2" value="1"><span class="check-box"></span>1만원 미만</label>
+        <label class="opt-label"><input type="radio" name="B2" value="2"><span class="check-box"></span>1만원 이상 ~ 3만원 미만</label>
+        <label class="opt-label"><input type="radio" name="B2" value="3"><span class="check-box"></span>3만원 이상 ~ 5만원 미만</label>
+        <label class="opt-label"><input type="radio" name="B2" value="4"><span class="check-box"></span>5만원 이상 ~ 10만원 미만</label>
+        <label class="opt-label"><input type="radio" name="B2" value="5"><span class="check-box"></span>10만원 이상</label>
+      </div>
+    </div>
+
+    <div class="q-card" id="qB3">
+      <div class="q-label"><span class="q-num">B3</span>중3 때 월평균 용돈은 얼마였나요?</div>
+      <div class="options">
+        <label class="opt-label"><input type="radio" name="B3" value="1"><span class="check-box"></span>1만원 미만</label>
+        <label class="opt-label"><input type="radio" name="B3" value="2"><span class="check-box"></span>1만원 이상 ~ 3만원 미만</label>
+        <label class="opt-label"><input type="radio" name="B3" value="3"><span class="check-box"></span>3만원 이상 ~ 5만원 미만</label>
+        <label class="opt-label"><input type="radio" name="B3" value="4"><span class="check-box"></span>5만원 이상 ~ 10만원 미만</label>
+        <label class="opt-label"><input type="radio" name="B3" value="5"><span class="check-box"></span>10만원 이상</label>
+      </div>
+    </div>
+
+    <div class="q-card" id="qB4">
+      <div class="q-label"><span class="q-num">B4</span>용돈 수령 방식은 어떠했나요?</div>
+      <div class="options">
+        <label class="opt-label"><input type="radio" name="B4" value="정기"><span class="check-box"></span>정기 (매월 일정 금액)</label>
+        <label class="opt-label"><input type="radio" name="B4" value="수시"><span class="check-box"></span>수시 (필요할 때마다)</label>
+        <label class="opt-label"><input type="radio" name="B4" value="혼합"><span class="check-box"></span>혼합 (정기 + 수시)</label>
+      </div>
+    </div>
+
+    <div class="nav-wrap">
+      <button class="btn btn-prev" onclick="goPrev('B')">← 이전</button>
+      <span class="step-indicator">2 / 4</span>
+      <button class="btn btn-next" onclick="goNext('B')">다음 →</button>
+    </div>
+  </div>
+
+  <!-- Section C: 학업 성취 -->
+  <div class="section" id="sec-C">
+    <div class="section-header">
+      <span class="section-badge">PART C</span>
+      <div>
+        <div class="section-title">학업 성취</div>
+        <div class="section-desc">중학교 각 학년의 평균 성적 등급을 선택해주세요. (1등급 = 최상위)</div>
+      </div>
+    </div>
+
+    <div class="q-card" id="qC1">
+      <div class="q-label"><span class="q-num">C1</span>중1 때 평균 성적 등급은?</div>
+      <div class="options inline">
+        <label class="opt-label"><input type="radio" name="C1" value="1"><span class="check-box"></span>1등급</label>
+        <label class="opt-label"><input type="radio" name="C1" value="2"><span class="check-box"></span>2등급</label>
+        <label class="opt-label"><input type="radio" name="C1" value="3"><span class="check-box"></span>3등급</label>
+        <label class="opt-label"><input type="radio" name="C1" value="4"><span class="check-box"></span>4등급</label>
+        <label class="opt-label"><input type="radio" name="C1" value="5"><span class="check-box"></span>5등급</label>
+      </div>
+    </div>
+
+    <div class="q-card" id="qC2">
+      <div class="q-label"><span class="q-num">C2</span>중2 때 평균 성적 등급은?</div>
+      <div class="options inline">
+        <label class="opt-label"><input type="radio" name="C2" value="1"><span class="check-box"></span>1등급</label>
+        <label class="opt-label"><input type="radio" name="C2" value="2"><span class="check-box"></span>2등급</label>
+        <label class="opt-label"><input type="radio" name="C2" value="3"><span class="check-box"></span>3등급</label>
+        <label class="opt-label"><input type="radio" name="C2" value="4"><span class="check-box"></span>4등급</label>
+        <label class="opt-label"><input type="radio" name="C2" value="5"><span class="check-box"></span>5등급</label>
+      </div>
+    </div>
+
+    <div class="q-card" id="qC3">
+      <div class="q-label"><span class="q-num">C3</span>중3 때 평균 성적 등급은?</div>
+      <div class="options inline">
+        <label class="opt-label"><input type="radio" name="C3" value="1"><span class="check-box"></span>1등급</label>
+        <label class="opt-label"><input type="radio" name="C3" value="2"><span class="check-box"></span>2등급</label>
+        <label class="opt-label"><input type="radio" name="C3" value="3"><span class="check-box"></span>3등급</label>
+        <label class="opt-label"><input type="radio" name="C3" value="4"><span class="check-box"></span>4등급</label>
+        <label class="opt-label"><input type="radio" name="C3" value="5"><span class="check-box"></span>5등급</label>
+      </div>
+    </div>
+
+    <div class="nav-wrap">
+      <button class="btn btn-prev" onclick="goPrev('C')">← 이전</button>
+      <span class="step-indicator">3 / 4</span>
+      <button class="btn btn-next" onclick="goNext('C')">다음 →</button>
+    </div>
+  </div>
+
+  <!-- Section D: 학습동기 -->
+  <div class="section" id="sec-D">
+    <div class="section-header">
+      <span class="section-badge">PART D</span>
+      <div>
+        <div class="section-title">학습동기</div>
+        <div class="section-desc">현재 본인의 학습에 대한 생각을 솔직하게 응답해주세요.</div>
+      </div>
+    </div>
+
+    <div class="q-card" id="qD_all">
+      <div style="font-size:12px; color:var(--muted); margin-bottom:16px;">
+        1 = 전혀 그렇지 않다 &nbsp;·&nbsp; 2 = 그렇지 않다 &nbsp;·&nbsp; 3 = 보통이다 &nbsp;·&nbsp; 4 = 그렇다 &nbsp;·&nbsp; 5 = 매우 그렇다
+      </div>
+      <div class="likert-wrap">
+        <table class="likert-table">
+          <thead>
+            <tr>
+              <th>문항</th>
+              <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th>
+            </tr>
+          </thead>
+          <tbody id="likertBody">
+            <!-- rows injected by JS -->
+          </tbody>
+        </table>
+      </div>
+      <div class="likert-labels">
+        <span>전혀 그렇지 않다</span>
+        <span>매우 그렇다</span>
+      </div>
+    </div>
+
+    <div class="nav-wrap">
+      <button class="btn btn-prev" onclick="goPrev('D')">← 이전</button>
+      <span class="step-indicator">4 / 4</span>
+      <button class="btn btn-submit" onclick="submitSurvey()">제출하기 ✓</button>
+    </div>
+  </div>
+
+  <!-- Thank you -->
+  <div id="thankyou">
+    <div class="ty-icon">🎉</div>
+    <div class="ty-title">설문이 완료되었습니다!</div>
+    <p class="ty-sub">소중한 시간을 내어 참여해주셔서 감사합니다.<br>응답 결과는 연구에 소중히 활용됩니다.</p>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ─── 구글 시트 연동 설정 ───────────────────────────────
+// 아래 URL을 Google Apps Script 웹 앱 배포 주소로 교체하세요.
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxjHsPVbm0MQIFSUgd0B-TS9Orb19VLJVTXwqf9kiy-Bc6yS0T8J5JInbjgm2ik54Ip/exec';
+// ─────────────────────────────────────────────────────
+
+const SECTIONS = ['A', 'B', 'C', 'D'];
+const PROGRESS = { A: 25, B: 50, C: 75, D: 100 };
+
+const likertItems = [
+  { id: 'D1', text: '나는 공부를 열심히 하고 싶다는 의지가 있다.' },
+  { id: 'D2', text: '나는 공부를 해야 하는 이유와 목표가 명확하다.' },
+  { id: 'D3', text: '나는 스스로 공부 계획을 세우고 실천하는 편이다.' },
+  { id: 'D4', text: '나는 공부가 힘들어도 포기하지 않는다.' },
+  { id: 'D5', text: '나는 성적이 오를 수 있다고 믿는다.' },
+];
+
+// Build likert table
+const tbody = document.getElementById('likertBody');
+likertItems.forEach(item => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td><span style="font-size:11px;background:var(--teal);color:white;padding:1px 6px;border-radius:2px;margin-right:6px;">${item.id}</span>${item.text}</td>` +
+    [1,2,3,4,5].map(v => `<td><div class="likert-radio" data-name="${item.id}" data-value="${v}" onclick="selectLikert(this)"></div></td>`).join('');
+  tbody.appendChild(tr);
+});
+
+function selectLikert(el) {
+  const name = el.dataset.name;
+  document.querySelectorAll(`.likert-radio[data-name="${name}"]`).forEach(r => r.classList.remove('checked'));
+  el.classList.add('checked');
+}
+
+// Radio styling
+document.addEventListener('change', e => {
+  if (e.target.type === 'radio') {
+    const name = e.target.name;
+    document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
+      r.closest('.opt-label').classList.remove('selected');
+    });
+    e.target.closest('.opt-label').classList.add('selected');
+  }
+});
+
+function getValue(name) {
+  const el = document.querySelector(`input[name="${name}"]:checked`);
+  return el ? el.value : null;
+}
+
+function getLikertValue(id) {
+  const el = document.querySelector(`.likert-radio[data-name="${id}"].checked`);
+  return el ? el.dataset.value : null;
+}
+
+const sectionQuestions = {
+  A: ['A1','A2','A3'],
+  B: ['B1','B2','B3','B4'],
+  C: ['C1','C2','C3'],
+  D: ['D1','D2','D3','D4','D5'],
+};
+
+function validateSection(sec) {
+  let valid = true;
+  if (sec === 'D') {
+    const missing = likertItems.filter(item => !getLikertValue(item.id));
+    const card = document.getElementById('qD_all');
+    if (missing.length > 0) {
+      card.classList.add('error');
+      let msg = card.querySelector('.error-msg');
+      if (!msg) { msg = document.createElement('div'); msg.className = 'error-msg'; card.appendChild(msg); }
+      msg.textContent = '모든 문항에 응답해주세요.';
+      valid = false;
+    } else {
+      card.classList.remove('error');
+      const msg = card.querySelector('.error-msg');
+      if (msg) msg.remove();
+    }
+    return valid;
+  }
+  sectionQuestions[sec].forEach(qid => {
+    const card = document.getElementById('q' + qid);
+    if (!getValue(qid)) {
+      card.classList.add('error');
+      let msg = card.querySelector('.error-msg');
+      if (!msg) { msg = document.createElement('div'); msg.className = 'error-msg'; card.appendChild(msg); }
+      msg.textContent = '항목을 선택해주세요.';
+      valid = false;
+    } else {
+      card.classList.remove('error');
+      const msg = card.querySelector('.error-msg');
+      if (msg) msg.remove();
+    }
+  });
+  return valid;
+}
+
+function goNext(sec) {
+  if (!validateSection(sec)) return;
+  const idx = SECTIONS.indexOf(sec);
+  const next = SECTIONS[idx + 1];
+  document.getElementById('sec-' + sec).classList.remove('active');
+  document.getElementById('sec-' + next).classList.add('active');
+  document.getElementById('progressFill').style.width = PROGRESS[next] + '%';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goPrev(sec) {
+  const idx = SECTIONS.indexOf(sec);
+  const prev = SECTIONS[idx - 1];
+  document.getElementById('sec-' + sec).classList.remove('active');
+  document.getElementById('sec-' + prev).classList.add('active');
+  document.getElementById('progressFill').style.width = PROGRESS[prev] + '%';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function submitSurvey() {
+  if (!validateSection('D')) return;
+
+  const data = {
+    timestamp: new Date().toLocaleString('ko-KR'),
+    A1: getValue('A1'), A2: getValue('A2'), A3: getValue('A3'),
+    B1: getValue('B1'), B2: getValue('B2'), B3: getValue('B3'), B4: getValue('B4'),
+    C1: getValue('C1'), C2: getValue('C2'), C3: getValue('C3'),
+    D1: getLikertValue('D1'), D2: getLikertValue('D2'), D3: getLikertValue('D3'),
+    D4: getLikertValue('D4'), D5: getLikertValue('D5'),
+  };
+
+  const btn = document.querySelector('.btn-submit');
+  btn.textContent = '제출 중...';
+  btn.disabled = true;
+
+  const showSuccess = () => {
+    document.getElementById('sec-D').style.display = 'none';
+    document.getElementById('intro').style.display = 'none';
+    document.getElementById('thankyou').style.display = 'block';
+    document.getElementById('progressFill').style.width = '100%';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
+    console.log('📊 [테스트 모드] 수집된 데이터:', data);
+    await new Promise(r => setTimeout(r, 800));
+    showSuccess();
+    return;
+  }
+
+  // no-cors 환경에서 안전하게 전달되는 URLSearchParams (form 방식) 사용
+  const params = new URLSearchParams();
+  Object.entries(data).forEach(([k, v]) => params.append(k, v ?? ''));
+
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: params,
+    });
+    showSuccess();
+  } catch (e) {
+    btn.textContent = '제출하기 ✓';
+    btn.disabled = false;
+    alert('제출 중 오류가 발생했습니다. 다시 시도해주세요.');
+  }
+}
+
+// init progress
+document.getElementById('progressFill').style.width = '25%';
+</script>
+</body>
+</html>
